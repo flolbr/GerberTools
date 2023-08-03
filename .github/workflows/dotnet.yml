@@ -59,7 +59,7 @@ jobs:
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       - uses: actions/download-artifact@v3
         with:
-          name: artifact # otherwise, it will download all artifacts, creating a subdirectory for each artifact.
+          name: GerberTools-${{ github.sha }} # otherwise, it will download all artifacts, creating a subdirectory for each artifact.
           path: ./Build/
       # - id: major_version
       #   run: >
