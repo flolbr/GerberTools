@@ -38,27 +38,25 @@ jobs:
         name: GerberTools-${{ github.sha }}
         path: ./Build/
 
-    - name: Extract Release Version
-      if: startsWith(github.ref, 'refs/tags/')
-      id: get_version
-      shell: bash
-      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-
-    - name: Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        name: GerberTools-${{ steps.get_version.outputs.version }}
-        files: Build/*
+    # - name: Release
+    #   if: startsWith(github.ref, 'refs/tags/')
+    #   uses: softprops/action-gh-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     name: GerberTools-${{ steps.get_version.outputs.version }}
+    #     files: Build/*
 
   release:
     name: Release
     needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: windows-2019
+    # if: startsWith(github.ref, 'refs/tags/')
     steps:
+      - name: Extract Release Version
+        id: get_version
+        shell: bash
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       - uses: actions/download-artifact@v3
         with:
           name: artifact # otherwise, it will download all artifacts, creating a subdirectory for each artifact.
@@ -78,4 +76,5 @@ jobs:
         with:
           prerelease: true
           generate_release_notes: true
+          name: GerberTools-${{ steps.get_version.outputs.version }}
           files: Build/*
