@@ -7,6 +7,7 @@ on:
   push:
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -31,7 +32,7 @@ jobs:
       run: msbuild GerberProjects/GerberProjects.sln /t:Build /p:Configuration=Release
 
     - name: Upload Build
-      if: startsWith(github.ref, 'refs/tags/') == false
+      # if: startsWith(github.ref, 'refs/tags/') == false
       uses: actions/upload-artifact@v3
       with:
         name: GerberTools-${{ github.sha }}
@@ -52,3 +53,29 @@ jobs:
         name: GerberTools-${{ steps.get_version.outputs.version }}
         files: Build/*
 
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact # otherwise, it will download all artifacts, creating a subdirectory for each artifact.
+          path: ./Build/
+      # - id: major_version
+      #   run: >
+      #     echo major_version=$(
+      #       echo ${{ github.ref }} | cut -d'v' -f2 | cut -d'.' -f1
+      #     ) >> $GITHUB_OUTPUT
+      # - id: is_release_candidate
+      #   run: >
+      #     echo is_release_candidate=$(
+      #       echo ${{ github.ref }} | grep -c 'rc'
+      #     ) >> $GITHUB_OUTPUT
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          generate_release_notes: true
+          files: Build/*
